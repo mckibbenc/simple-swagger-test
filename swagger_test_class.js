@@ -107,7 +107,7 @@ function createEndpoint(path, parameters, responseExamples) {
   } else if (path.includes('{')) {
     parameters.forEach((param) => {
       if (param.in === 'path') {
-        endpoint = endpoint.replace(`{ ${param.name} }`, param.example);
+        endpoint = endpoint.replace(`{${param.name}}`, param.example);
       }
     });
   }
