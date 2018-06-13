@@ -36,6 +36,9 @@ function _patch(request, response) {
       .send(response.exampleRequest)
       .end(function (err, res) {
         expect(res.statusCode).to.be.equal(response.status);
+        if (res.body.modified){
+          delete res.body.modified;
+        }
         expect(res.body).to.deep.equal(response.responseBody);
         done();
       });
