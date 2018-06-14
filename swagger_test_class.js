@@ -8,7 +8,7 @@ function _post(request, response) {
       .send(response.exampleRequest)
       .end(function (err, res) {
         expect(res.statusCode).to.be.equal(response.status);
-        response.responseBody = verifyType(res.body, response.responseBody);
+        response.responseBody = buildExpectedResponse(res.body, response.responseBody);
         expect(res.body).to.deep.equal(response.responseBody);
         done();
       });
@@ -21,7 +21,7 @@ function _get(request, response) {
       .set(request.headers)
       .end(function (err, res) {
         expect(res.statusCode).to.be.equal(response.status);
-        response.responseBody = verifyType(res.body, response.responseBody);
+        response.responseBody = buildExpectedResponse(res.body, response.responseBody);
         expect(res.body).to.deep.equal(response.responseBody);
         done();
       });
@@ -35,7 +35,7 @@ function _patch(request, response) {
       .send(response.exampleRequest)
       .end(function (err, res) {
         expect(res.statusCode).to.be.equal(response.status);
-        response.responseBody = verifyType(res.body, response.responseBody);
+        response.responseBody = buildExpectedResponse(res.body, response.responseBody);
         expect(res.body).to.deep.equal(response.responseBody);
         done();
       });
@@ -149,43 +149,40 @@ function parseSpec(swaggerSpec) {
   return tests;
 }
 
-function verifyType(res, response) {
-  for (var key in response) {
-    if (typeof response[key] === 'object') {
-      for (var key2 in response[key]) {
-        response[key][key2] = copyValues(res[key][key2], response[key][key2]);
+function buildExpectedResponse(actualResponseBody, expectedResponseBody) {
+  for (var key in expectedResponseBody) {
+    if (typeof expectedResponseBody[key] === 'object') {
+      for (var key2 in expectedResponseBody[key]) {
+        expectedResponseBody[key][key2] =  handlePlaceholders(actualResponseBody[key][key2], expectedResponseBody[key][key2]);
       }
     } else {
-      response[key] = copyValues(res[key], response[key]);
+      expectedResponseBody[key] =  handlePlaceholders(actualResponseBody[key], expectedResponseBody[key]);
     }
   }
-  return response;
+  return expectedResponseBody;
 }
 
-function copyValues(resValue, expectedValue) {
+function  handlePlaceholders( actualValue, expectedValue) {
   if (expectedValue === '${number}') {
-    if (typeof resValue === 'number') {
-      return resValue;
+    if (typeof  actualValue === 'number') {
+      return  actualValue;
     } else {
-      console.log(`${resValue} has Invalid type`);
-      throw `${resValue} has Invalid type`;
+      throw `${ actualValue} has Invalid type`;
     }
   }
   if (expectedValue === '${string}') {
-    if (typeof resValue === 'string') {
-      return resValue;
+    if (typeof  actualValue === 'string') {
+      return  actualValue;
     } else {
-      console.log(`${resValue} has Invalid type`);
-      throw `${resValue} has Invalid type`;
+      throw `${ actualValue} has Invalid type`;
     }
 
   }
   if (expectedValue === '${boolean}') {
-    if (typeof resValue === 'boolean') {
-      return resValue;
+    if (typeof  actualValue === 'boolean') {
+      return  actualValue;
     } else {
-      console.log(`${resValue} has Invalid type`);
-      throw `${resValue} has Invalid type`;
+      throw `${ actualValue} has Invalid type`;
     }
   }
   return expectedValue;
