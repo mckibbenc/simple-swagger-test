@@ -8,9 +8,7 @@ function _post(request, response) {
       .send(response.exampleRequest)
       .end(function (err, res) {
         expect(res.statusCode).to.be.equal(response.status);
-        if (res.body.modified){
-          delete res.body.modified;
-        }
+        response.responseBody = verifyType(res.body, response.responseBody);
         expect(res.body).to.deep.equal(response.responseBody);
         done();
       });
@@ -23,9 +21,7 @@ function _get(request, response) {
       .set(request.headers)
       .end(function (err, res) {
         expect(res.statusCode).to.be.equal(response.status);
-        if (res.body.modified){
-          delete res.body.modified;
-        }
+        response.responseBody = verifyType(res.body, response.responseBody);
         expect(res.body).to.deep.equal(response.responseBody);
         done();
       });
@@ -39,9 +35,7 @@ function _patch(request, response) {
       .send(response.exampleRequest)
       .end(function (err, res) {
         expect(res.statusCode).to.be.equal(response.status);
-        if (res.body.modified){
-          delete res.body.modified;
-        }
+        response.responseBody = verifyType(res.body, response.responseBody);
         expect(res.body).to.deep.equal(response.responseBody);
         done();
       });
@@ -155,6 +149,47 @@ function parseSpec(swaggerSpec) {
   return tests;
 }
 
+function verifyType(res, response) {
+  for (var key in response) {
+    if (typeof response[key] === 'object') {
+      for (var key2 in response[key]) {
+        response[key][key2] = copyValues(res[key][key2], response[key][key2]);
+      }
+    } else {
+      response[key] = copyValues(res[key], response[key]);
+    }
+  }
+  return response;
+}
+
+function copyValues(resValue, expectedValue) {
+  if (expectedValue === '${number}') {
+    if (typeof resValue === 'number') {
+      return resValue;
+    } else {
+      console.log(`${resValue} has Invalid type`);
+      throw `${resValue} has Invalid type`;
+    }
+  }
+  if (expectedValue === '${string}') {
+    if (typeof resValue === 'string') {
+      return resValue;
+    } else {
+      console.log(`${resValue} has Invalid type`);
+      throw `${resValue} has Invalid type`;
+    }
+
+  }
+  if (expectedValue === '${boolean}') {
+    if (typeof resValue === 'boolean') {
+      return resValue;
+    } else {
+      console.log(`${resValue} has Invalid type`);
+      throw `${resValue} has Invalid type`;
+    }
+  }
+  return expectedValue;
+}
 
 exports.ComponentTest = ComponentTest;
 exports.parseSpec = parseSpec;
