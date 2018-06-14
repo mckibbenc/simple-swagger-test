@@ -8,6 +8,7 @@ function _post(request, response) {
       .send(response.exampleRequest)
       .end(function (err, res) {
         expect(res.statusCode).to.be.equal(response.status);
+        response.responseBody = buildExpectedResponse(res.body, response.responseBody);
         expect(res.body).to.deep.equal(response.responseBody);
         done();
       });
@@ -20,6 +21,7 @@ function _get(request, response) {
       .set(request.headers)
       .end(function (err, res) {
         expect(res.statusCode).to.be.equal(response.status);
+        response.responseBody = buildExpectedResponse(res.body, response.responseBody);
         expect(res.body).to.deep.equal(response.responseBody);
         done();
       });
@@ -33,6 +35,7 @@ function _patch(request, response) {
       .send(response.exampleRequest)
       .end(function (err, res) {
         expect(res.statusCode).to.be.equal(response.status);
+        response.responseBody = buildExpectedResponse(res.body, response.responseBody);
         expect(res.body).to.deep.equal(response.responseBody);
         done();
       });
@@ -146,6 +149,44 @@ function parseSpec(swaggerSpec) {
   return tests;
 }
 
+function buildExpectedResponse(actualResponseBody, expectedResponseBody) {
+  for (var key in expectedResponseBody) {
+    if (typeof expectedResponseBody[key] === 'object') {
+      for (var key2 in expectedResponseBody[key]) {
+        expectedResponseBody[key][key2] =  handlePlaceholders(actualResponseBody[key][key2], expectedResponseBody[key][key2]);
+      }
+    } else {
+      expectedResponseBody[key] =  handlePlaceholders(actualResponseBody[key], expectedResponseBody[key]);
+    }
+  }
+  return expectedResponseBody;
+}
+
+function  handlePlaceholders( actualValue, expectedValue) {
+  if (expectedValue === '${number}') {
+    if (typeof  actualValue === 'number') {
+      return  actualValue;
+    } else {
+      throw `${ actualValue} has Invalid type`;
+    }
+  }
+  if (expectedValue === '${string}') {
+    if (typeof  actualValue === 'string') {
+      return  actualValue;
+    } else {
+      throw `${ actualValue} has Invalid type`;
+    }
+
+  }
+  if (expectedValue === '${boolean}') {
+    if (typeof  actualValue === 'boolean') {
+      return  actualValue;
+    } else {
+      throw `${ actualValue} has Invalid type`;
+    }
+  }
+  return expectedValue;
+}
 
 exports.ComponentTest = ComponentTest;
 exports.parseSpec = parseSpec;
