@@ -42,6 +42,20 @@ function _patch(request, response) {
   });
 }
 
+function _put(request, response) {
+  it (`${request.description} with status of ${response.status}: ${response.description}`, function (done) {
+    agent.put(request.path)
+      .set(request.headers)
+      .send(response.exampleRequest)
+      .end(function (err, res) {
+        expect(res.statusCode).to.be.equal(response.status);
+        response.responseBody = buildExpectedResponse(res.body, response.responseBody);
+        expect(res.body).to.deep.equal(response.responseBody);
+        done();
+      });
+  });
+}
+
 function _delete(request, response) {
   it(`${request.description} with status of ${response.status}: ${response.description}`, function (done) {
     agent.delete(request.path)
@@ -70,6 +84,9 @@ class ComponentTest {
         break;
       case 'patch':
         _patch(this.request, this.response);
+        break;
+      case 'put':
+        _put(this.request, this.response)
         break;
       case 'delete':
         _delete(this.request, this.response);
