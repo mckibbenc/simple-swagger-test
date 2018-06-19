@@ -1,6 +1,6 @@
 {
   "name": "simple-swagger-test",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A simple library for testing swagger docs, written in Node.js",
   "main": "swagger_test_class.js",
   "scripts": {
