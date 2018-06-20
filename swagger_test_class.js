@@ -168,12 +168,12 @@ function parseSpec(swaggerSpec) {
 
 function buildExpectedResponse(actualResponseBody, expectedResponseBody) {
   for (var key in expectedResponseBody) {
-    if (typeof expectedResponseBody[key] === 'object') {
-      for (var key2 in expectedResponseBody[key]) {
-        expectedResponseBody[key][key2] =  handlePlaceholders(actualResponseBody[key][key2], expectedResponseBody[key][key2]);
-      }
+    if (typeof expectedResponseBody[key] === 'object' && expectedResponseBody[key] && actualResponseBody[key]) {
+      expectedResponseBody[key] = buildExpectedResponse(actualResponseBody[key], expectedResponseBody[key]);
+    } else if (Array.isArray(expectedResponseBody[key]) && actualResponseBody[key] && Array.isArray(actualResponseBody[key])) {
+      expectedResponseBody[key] = buildExpectedResponse(actualResponseBody[key], expectedResponseBody[key]);
     } else {
-      expectedResponseBody[key] =  handlePlaceholders(actualResponseBody[key], expectedResponseBody[key]);
+      expectedResponseBody[key] = handlePlaceholders(actualResponseBody[key], expectedResponseBody[key]);
     }
   }
   return expectedResponseBody;
