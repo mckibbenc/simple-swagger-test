@@ -120,7 +120,7 @@ class Response {
   }
 }
 
-function createEndpoint(path, parameters, responseExamples, queryParam) {
+function createEndpoint(path, parameters, responseExamples) {
   let endpoint = path;
   if (responseExamples.path) {
     endpoint = responseExamples.path;
@@ -129,13 +129,13 @@ function createEndpoint(path, parameters, responseExamples, queryParam) {
       if (param.in === 'path') {
         endpoint = endpoint.replace(`{${param.name}}`, param.example);
       }
+      if (param.in === 'query' && param.required) {
+        endpoint += param.example;
+      }
     });
   }
   if (responseExamples.query) {
     endpoint += responseExamples.query;
-  }
-  if (queryParam) {
-    endpoint += queryParam.example;
   }
   return endpoint;
 }
@@ -149,53 +149,24 @@ function parseSpec(swaggerSpec) {
       Object.keys(m.responses).forEach(function (response) {
         const r = m.responses[response];
         if (response !== '401' && response !== '500') {
-          const ctRequest = buildCtRequest(swaggerSpec, method, p, m, r, null);
-          const ctResponse = buildCtResponse(response, r, null);
+          const ctRequest = new Request();
+          ctRequest.basePath = swaggerSpec.basePath;
+          ctRequest.endpoint = createEndpoint(p, m.parameters, r.examples);
+          ctRequest.method = method.toLowerCase();
+          ctRequest.description = m.description;
+          ctRequest.headers = { 'Content-Type': 'application/json', Authorization: 'none' }; // standard headers
+          const ctResponse = new Response();
+          ctResponse.status = parseInt(response, 10);
+          ctResponse.description = r.description;
+          ctResponse.exampleRequest = r.examples.request;
+          ctResponse.responseBody = r.examples.response;
           tests.push(new ComponentTest(ctRequest, ctResponse));
-          m.parameters.forEach((param) => {
-            if (param.example && param.in === 'query' && response === '200') {
-              const ctRequest = buildCtRequest(swaggerSpec, method, p, m, r, param);
-              const ctResponse = buildCtResponse(response, r, param);
-              tests.push(new ComponentTest(ctRequest, ctResponse));
-            }
-          });
         }
       });
     });
   });
 
   return tests;
-}
-
-function buildCtRequest(swaggerSpec, method, p, m, r, param) {
-  const ctRequest = new Request();
-  ctRequest.basePath = swaggerSpec.basePath;
-  ctRequest.endpoint = createEndpoint(p, m.parameters, r.examples, param);
-  ctRequest.method = method.toLowerCase();
-  if (param) {
-    ctRequest.description = m.description + ` with ${param.name} specified`;
-  } else {
-    ctRequest.description = m.description;
-  }
-  ctRequest.headers = { 'Content-Type': 'application/json', Authorization: 'none' }; // standard headers
-  return ctRequest;
-}
-
-function buildCtResponse(response, r, param) {
-  const ctResponse = new Response();
-  ctResponse.status = parseInt(response, 10);
-  ctResponse.description = r.description;
-  ctResponse.exampleRequest = r.examples.request;
-  if (param) {
-    if (param.response) {
-      ctResponse.responseBody = param.response;
-    }else {
-      ctResponse.responseBody = r.examples.response;
-    }
-  } else {
-    ctResponse.responseBody = r.examples.response;
-  }
-  return ctResponse;
 }
 
 function buildExpectedResponse(actualResponseBody, expectedResponseBody) {
