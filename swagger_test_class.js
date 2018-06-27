@@ -43,7 +43,7 @@ function _patch(request, response) {
 }
 
 function _put(request, response) {
-  it (`${request.description} with status of ${response.status}: ${response.description}`, function (done) {
+  it(`${request.description} with status of ${response.status}: ${response.description}`, function (done) {
     agent.put(request.path)
       .set(request.headers)
       .send(response.exampleRequest)
@@ -129,6 +129,9 @@ function createEndpoint(path, parameters, responseExamples) {
       if (param.in === 'path') {
         endpoint = endpoint.replace(`{${param.name}}`, param.example);
       }
+      if (param.in === 'query' && param.required) {
+        endpoint += param.example;
+      }
     });
   }
   if (responseExamples.query) {
@@ -179,27 +182,27 @@ function buildExpectedResponse(actualResponseBody, expectedResponseBody) {
   return expectedResponseBody;
 }
 
-function  handlePlaceholders( actualValue, expectedValue) {
+function handlePlaceholders(actualValue, expectedValue) {
   if (expectedValue === '${number}') {
-    if (typeof  actualValue === 'number') {
-      return  actualValue;
+    if (typeof actualValue === 'number') {
+      return actualValue;
     } else {
-      throw `${ actualValue} has Invalid type`;
+      throw `${actualValue} has Invalid type`;
     }
   }
   if (expectedValue === '${string}') {
-    if (typeof  actualValue === 'string') {
-      return  actualValue;
+    if (typeof actualValue === 'string') {
+      return actualValue;
     } else {
-      throw `${ actualValue} has Invalid type`;
+      throw `${actualValue} has Invalid type`;
     }
 
   }
   if (expectedValue === '${boolean}') {
-    if (typeof  actualValue === 'boolean') {
-      return  actualValue;
+    if (typeof actualValue === 'boolean') {
+      return actualValue;
     } else {
-      throw `${ actualValue} has Invalid type`;
+      throw `${actualValue} has Invalid type`;
     }
   }
   return expectedValue;
