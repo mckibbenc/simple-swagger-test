@@ -161,6 +161,17 @@ function parseSpec(swaggerSpec) {
           ctResponse.exampleRequest = r.examples.request;
           ctResponse.responseBody = r.examples.response;
           tests.push(new ComponentTest(ctRequest, ctResponse));
+          let queryParamsForMethod = extractQueryParametersWithExamplesForMethod(response, m.parameters)
+          if (queryParamsForMethod.length > 0 ) {
+            setResponsesForQueryParameters(queryParamsForMethod, r.examples);
+            queryParamsForMethod = queryParamsForMethod.filter( element => {return (element.response)});
+            for (queryParam of queryParamsForMethod) {
+              ctRequest.endpoint = createEndpoint(p, m.parameters, r.examples) + queryParam.query;
+              ctResponse.description = r.description + ` with ${queryParam.name} query parameter`
+              ctResponse.responseBody = queryParam.response;
+              tests.push(new ComponentTest(ctRequest, ctResponse));
+            }
+          }
         }
       });
     });
@@ -182,30 +193,49 @@ function buildExpectedResponse(actualResponseBody, expectedResponseBody) {
   return expectedResponseBody;
 }
 
-function handlePlaceholders(actualValue, expectedValue) {
+function  handlePlaceholders( actualValue, expectedValue) {
   if (expectedValue === '${number}') {
-    if (typeof actualValue === 'number') {
-      return actualValue;
+    if (typeof  actualValue === 'number') {
+      return  actualValue;
     } else {
-      throw `${actualValue} has Invalid type`;
+      throw `${ actualValue} has Invalid type`;
     }
   }
   if (expectedValue === '${string}') {
-    if (typeof actualValue === 'string') {
-      return actualValue;
+    if (typeof  actualValue === 'string') {
+      return  actualValue;
     } else {
-      throw `${actualValue} has Invalid type`;
+      throw `${ actualValue} has Invalid type`;
     }
 
   }
   if (expectedValue === '${boolean}') {
-    if (typeof actualValue === 'boolean') {
-      return actualValue;
+    if (typeof  actualValue === 'boolean') {
+      return  actualValue;
     } else {
-      throw `${actualValue} has Invalid type`;
+      throw `${ actualValue} has Invalid type`;
     }
   }
   return expectedValue;
+}
+
+const  extractQueryParametersWithExamplesForMethod = (method, parameterArray) => {
+  const queryParamsWithExamples = parameterArray.filter( (element) => { return ( element.in === 'query' && element.examples )});
+  const methodExamples = [];
+  for (object of queryParamsWithExamples ) {
+    if (object.examples[method]) {
+      methodExamples.push({ name: object.name, query: object.examples[method] })
+    }
+  }
+  return methodExamples;
+}
+
+const setResponsesForQueryParameters = (queryParams, responses) => {
+  for (queryParam of queryParams) {
+    if (responses[`response_${queryParam.name}`]) {
+      queryParam.response = responses[`response_${queryParam.name}`];
+    }
+  }
 }
 
 exports.ComponentTest = ComponentTest;
