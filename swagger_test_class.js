@@ -16,18 +16,16 @@ function _post(request, response) {
 }
 
 function _get(request, response) {
-  setTimeout(function () {
-    it(`${request.description} with status of ${response.status}: ${response.description}`, function (done) {
-      agent.get(request.path)
-        .set(request.headers)
-        .end(function (err, res) {
-          expect(res.statusCode).to.be.equal(response.status);
-          response.responseBody = buildExpectedResponse(res.body, response.responseBody);
-          expect(res.body).to.deep.equal(response.responseBody);
-          done();
-        });
-    });
-  }, 3000);
+  it(`${request.description} with status of ${response.status}: ${response.description}`, function (done) {
+    agent.get(request.path)
+      .set(request.headers)
+      .end(function (err, res) {
+        expect(res.statusCode).to.be.equal(response.status);
+        response.responseBody = buildExpectedResponse(res.body, response.responseBody);
+        expect(res.body).to.deep.equal(response.responseBody);
+        done();
+      });
+  });
 }
 
 function _patch(request, response) {
