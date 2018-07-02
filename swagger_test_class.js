@@ -168,10 +168,14 @@ function parseSpec(swaggerSpec) {
             setResponsesForQueryParameters(queryParamsForMethod, r.examples);
             queryParamsForMethod = queryParamsForMethod.filter( element => {return (element.response)});
             for (queryParam of queryParamsForMethod) {
-              ctRequest.endpoint = createEndpoint(p, m.parameters, r.examples) + queryParam.query;
-              ctResponse.description = r.description + ` with ${queryParam.name} query parameter`
-              ctResponse.responseBody = queryParam.response;
-              tests.push(new ComponentTest(ctRequest, ctResponse));
+              const queryRequest = new Request();
+              const queryResponse = new Response();
+              Object.assign(queryRequest, ctRequest);
+              Object.assign(queryResponse, ctResponse);
+              queryRequest.endpoint = createEndpoint(p, m.parameters, r.examples) + queryParam.query;
+              queryResponse.description = r.description + ` with ${queryParam.name} query parameter`;
+              queryResponse.responseBody = queryParam.response;
+              tests.push(new ComponentTest(queryRequest, queryResponse));
             }
           }
         }
