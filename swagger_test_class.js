@@ -16,18 +16,16 @@ function _post(request, response) {
 }
 
 function _get(request, response) {
-  setTimeout(function () {
-    it(`${request.description} with status of ${response.status}: ${response.description}`, function (done) {
-      agent.get(request.path)
-        .set(request.headers)
-        .end(function (err, res) {
-          expect(res.statusCode).to.be.equal(response.status);
-          response.responseBody = buildExpectedResponse(res.body, response.responseBody);
-          expect(res.body).to.deep.equal(response.responseBody);
-          done();
-        });
-    });
-  }, 3000);
+  it(`${request.description} with status of ${response.status}: ${response.description}`, function (done) {
+    agent.get(request.path)
+      .set(request.headers)
+      .end(function (err, res) {
+        expect(res.statusCode).to.be.equal(response.status);
+        response.responseBody = buildExpectedResponse(res.body, response.responseBody);
+        expect(res.body).to.deep.equal(response.responseBody);
+        done();
+      });
+  });
 }
 
 function _patch(request, response) {
@@ -168,10 +166,14 @@ function parseSpec(swaggerSpec) {
             setResponsesForQueryParameters(queryParamsForMethod, r.examples);
             queryParamsForMethod = queryParamsForMethod.filter( element => {return (element.response)});
             for (queryParam of queryParamsForMethod) {
-              ctRequest.endpoint = createEndpoint(p, m.parameters, r.examples) + queryParam.query;
-              ctResponse.description = r.description + ` with ${queryParam.name} query parameter`
-              ctResponse.responseBody = queryParam.response;
-              tests.push(new ComponentTest(ctRequest, ctResponse));
+              const queryRequest = new Request();
+              const queryResponse = new Response();
+              Object.assign(queryRequest, ctRequest);
+              Object.assign(queryResponse, ctResponse);
+              queryRequest.endpoint = createEndpoint(p, m.parameters, r.examples) + queryParam.query;
+              queryResponse.description = r.description + ` with ${queryParam.name} query parameter`;
+              queryResponse.responseBody = queryParam.response;
+              tests.push(new ComponentTest(queryRequest, queryResponse));
             }
           }
         }
