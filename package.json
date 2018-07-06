@@ -4,7 +4,7 @@
   "description": "A simple library for testing swagger docs, written in Node.js",
   "main": "swagger_test_class.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "./node_modules/.bin/mocha swagger_test_class.spec.js"
   },
   "repository": {
     "type": "git",
@@ -18,11 +18,14 @@
   "author": "Colin McKibben <mckibbenc@gmail.com>",
   "license": "MIT",
   "dependencies": {
-    "chai": "4.1.1",
+    "chai": "^4.1.2",
     "supertest": "3.0.0"
   },
   "bugs": {
     "url": "https://github.com/mckibbenc/simple-swagger-test/issues"
   },
-  "homepage": "https://github.com/mckibbenc/simple-swagger-test#readme"
+  "homepage": "https://github.com/mckibbenc/simple-swagger-test#readme",
+  "devDependencies": {
+    "mocha": "^5.1.0"
+  }
 }

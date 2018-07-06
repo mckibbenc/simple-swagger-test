@@ -1,5 +1,15 @@
 const expect = require('chai').expect;
-const agent = require('supertest').agent(require('../../app.js'));
+const fs = require('fs');
+let agent;
+
+// TODO: make the location of the file customizable;
+if (fs.exists('../../app.js'), function (exists) {
+  if (exists) {
+    agent = require('supertest').agent(require('../../app.js'));
+  } else {
+    throw new Error('Couldn\'t launch supertest: app.js missing');
+  }
+})
 
 function _post(request, response) {
   it(`${request.description} with status of ${response.status}: ${response.description}`, function (done) {
@@ -130,7 +140,7 @@ function createEndpoint(path, parameters, responseExamples) {
         endpoint = endpoint.replace(`{${param.name}}`, param.example);
       }
       if (param.in === 'query' && param.required) {
-        endpoint += param.example;
+        endpoint = appendQueryParameterTo(endpoint, param.example);
       }
     });
   }
@@ -138,6 +148,15 @@ function createEndpoint(path, parameters, responseExamples) {
     endpoint += responseExamples.query;
   }
   return endpoint;
+}
+
+function appendQueryParameterTo(baseEndpoint, queryParam) {
+  const param = queryParam.replace('?','');
+  if (baseEndpoint.includes('?')) {
+    return baseEndpoint + '&' + param;
+  } else {
+    return baseEndpoint + '?' + param;
+  }
 }
 
 function parseSpec(swaggerSpec) {
@@ -170,7 +189,7 @@ function parseSpec(swaggerSpec) {
               const queryResponse = new Response();
               Object.assign(queryRequest, ctRequest);
               Object.assign(queryResponse, ctResponse);
-              queryRequest.endpoint = createEndpoint(p, m.parameters, r.examples) + queryParam.query;
+              queryRequest.endpoint = appendQueryParameterTo(createEndpoint(p, m.parameters, r.examples), queryParam.query);
               queryResponse.description = r.description + ` with ${queryParam.name} query parameter`;
               queryResponse.responseBody = queryParam.response;
               tests.push(new ComponentTest(queryRequest, queryResponse));
@@ -244,3 +263,4 @@ const setResponsesForQueryParameters = (queryParams, responses) => {
 
 exports.ComponentTest = ComponentTest;
 exports.parseSpec = parseSpec;
+exports.__appendQueryParameterTo = appendQueryParameterTo;
