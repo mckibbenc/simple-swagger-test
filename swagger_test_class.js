@@ -1,5 +1,15 @@
 const expect = require('chai').expect;
-const agent = require('supertest').agent(require('../../app.js'));
+const fs = require('fs');
+let agent;
+
+// TODO: make the location of the file customizable;
+if (fs.exists('../../app.js'), function (exists) {
+  if (exists) {
+    agent = require('supertest').agent(require('../../app.js'));
+  } else {
+    throw new Error('Couldn\'t launch supertest: app.js missing');
+  }
+})
 
 function _post(request, response) {
   it(`${request.description} with status of ${response.status}: ${response.description}`, function (done) {
@@ -141,11 +151,11 @@ function createEndpoint(path, parameters, responseExamples) {
 }
 
 function appendQueryParameterTo(baseEndpoint, queryParam) {
-  queryParam.replace('?','');
+  const param = queryParam.replace('?','');
   if (baseEndpoint.includes('?')) {
-    return baseEndpoint + '&' + queryParam;
+    return baseEndpoint + '&' + param;
   } else {
-    return baseEndpoint + '?' + queryParam;
+    return baseEndpoint + '?' + param;
   }
 }
 
@@ -251,9 +261,7 @@ const setResponsesForQueryParameters = (queryParams, responses) => {
   }
 }
 
-module.exports = {
-  ComponentTest = ComponentTest,
-  parseSpec = parseSpec,
-  __createEndpoint = createEndpoint,
-  __appendQueryParameterTo = appendQueryParameterTo
-}
+exports.ComponentTest = ComponentTest;
+exports.parseSpec = parseSpec;
+exports.__createEndpoint = createEndpoint;
+exports.__appendQueryParameterTo = appendQueryParameterTo;
