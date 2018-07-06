@@ -130,7 +130,7 @@ function createEndpoint(path, parameters, responseExamples) {
         endpoint = endpoint.replace(`{${param.name}}`, param.example);
       }
       if (param.in === 'query' && param.required) {
-        endpoint += param.example;
+        endpoint = appendQueryParameterTo(endpoint, param.example);
       }
     });
   }
@@ -138,6 +138,15 @@ function createEndpoint(path, parameters, responseExamples) {
     endpoint += responseExamples.query;
   }
   return endpoint;
+}
+
+function appendQueryParameterTo(baseEndpoint, queryParam) {
+  queryParam.replace('?','');
+  if (baseEndpoint.includes('?')) {
+    return baseEndpoint + '&' + queryParam;
+  } else {
+    return baseEndpoint + '?' + queryParam;
+  }
 }
 
 function parseSpec(swaggerSpec) {
@@ -170,7 +179,7 @@ function parseSpec(swaggerSpec) {
               const queryResponse = new Response();
               Object.assign(queryRequest, ctRequest);
               Object.assign(queryResponse, ctResponse);
-              queryRequest.endpoint = createEndpoint(p, m.parameters, r.examples) + queryParam.query;
+              queryRequest.endpoint = appendQueryParameterTo(createEndpoint(p, m.parameters, r.examples), baseEndpoint);
               queryResponse.description = r.description + ` with ${queryParam.name} query parameter`;
               queryResponse.responseBody = queryParam.response;
               tests.push(new ComponentTest(queryRequest, queryResponse));
