@@ -28,7 +28,3 @@ describe('The appendQueryParameterTo function', () => {
         done();
     });
 });
-
-describe('  ', () => {
-
-});

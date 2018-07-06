@@ -263,5 +263,4 @@ const setResponsesForQueryParameters = (queryParams, responses) => {
 
 exports.ComponentTest = ComponentTest;
 exports.parseSpec = parseSpec;
-exports.__createEndpoint = createEndpoint;
 exports.__appendQueryParameterTo = appendQueryParameterTo;
