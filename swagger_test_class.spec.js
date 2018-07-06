@@ -1,13 +1,4 @@
 const expect = require('chai').expect;
-const sinon = require('sinon');
-const supertest = require('supertest');
-const mock = require('mock-require');
-
-mock('supertest', {
-    agent: (...param) => {
-        console.log('supertest mocked')
-    }
-})
 const simple_swagger_test = require('./swagger_test_class');
 
 
