@@ -189,7 +189,7 @@ function parseSpec(swaggerSpec) {
               const queryResponse = new Response();
               Object.assign(queryRequest, ctRequest);
               Object.assign(queryResponse, ctResponse);
-              queryRequest.endpoint = appendQueryParameterTo(createEndpoint(p, m.parameters, r.examples), baseEndpoint);
+              queryRequest.endpoint = appendQueryParameterTo(createEndpoint(p, m.parameters, r.examples), queryParam.query);
               queryResponse.description = r.description + ` with ${queryParam.name} query parameter`;
               queryResponse.responseBody = queryParam.response;
               tests.push(new ComponentTest(queryRequest, queryResponse));
