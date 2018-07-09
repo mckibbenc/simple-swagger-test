@@ -3,13 +3,12 @@ const fs = require('fs');
 let agent;
 
 // TODO: make the location of the file customizable;
-if (fs.exists('../../app.js'), function (exists) {
-  if (exists) {
-    agent = require('supertest').agent(require('../../app.js'));
-  } else {
-    throw new Error('Couldn\'t launch supertest: app.js missing');
-  }
-})
+const exists = fs.existsSync('./app.js')
+if (exists) {
+  agent = require('supertest').agent(require('../../app.js'));
+} else {
+  throw new Error('Couldn\'t launch supertest: app.js missing');
+}
 
 function _post(request, response) {
   it(`${request.description} with status of ${response.status}: ${response.description}`, function (done) {
@@ -151,7 +150,7 @@ function createEndpoint(path, parameters, responseExamples) {
 }
 
 function appendQueryParameterTo(baseEndpoint, queryParam) {
-  const param = queryParam.replace('?','');
+  const param = queryParam.replace('?', '');
   if (baseEndpoint.includes('?')) {
     return baseEndpoint + '&' + param;
   } else {
@@ -181,9 +180,9 @@ function parseSpec(swaggerSpec) {
           ctResponse.responseBody = r.examples.response;
           tests.push(new ComponentTest(ctRequest, ctResponse));
           let queryParamsForMethod = extractQueryParametersWithExamplesForMethod(response, m.parameters)
-          if (queryParamsForMethod.length > 0 ) {
+          if (queryParamsForMethod.length > 0) {
             setResponsesForQueryParameters(queryParamsForMethod, r.examples);
-            queryParamsForMethod = queryParamsForMethod.filter( element => {return (element.response)});
+            queryParamsForMethod = queryParamsForMethod.filter(element => { return (element.response) });
             for (queryParam of queryParamsForMethod) {
               const queryRequest = new Request();
               const queryResponse = new Response();
@@ -216,36 +215,36 @@ function buildExpectedResponse(actualResponseBody, expectedResponseBody) {
   return expectedResponseBody;
 }
 
-function  handlePlaceholders( actualValue, expectedValue) {
+function handlePlaceholders(actualValue, expectedValue) {
   if (expectedValue === '${number}') {
-    if (typeof  actualValue === 'number') {
-      return  actualValue;
+    if (typeof actualValue === 'number') {
+      return actualValue;
     } else {
-      throw `${ actualValue} has Invalid type`;
+      throw `${actualValue} has Invalid type`;
     }
   }
   if (expectedValue === '${string}') {
-    if (typeof  actualValue === 'string') {
-      return  actualValue;
+    if (typeof actualValue === 'string') {
+      return actualValue;
     } else {
-      throw `${ actualValue} has Invalid type`;
+      throw `${actualValue} has Invalid type`;
     }
 
   }
   if (expectedValue === '${boolean}') {
-    if (typeof  actualValue === 'boolean') {
-      return  actualValue;
+    if (typeof actualValue === 'boolean') {
+      return actualValue;
     } else {
-      throw `${ actualValue} has Invalid type`;
+      throw `${actualValue} has Invalid type`;
     }
   }
   return expectedValue;
 }
 
-const  extractQueryParametersWithExamplesForMethod = (method, parameterArray) => {
-  const queryParamsWithExamples = parameterArray.filter( (element) => { return ( element.in === 'query' && element.examples )});
+const extractQueryParametersWithExamplesForMethod = (method, parameterArray) => {
+  const queryParamsWithExamples = parameterArray.filter((element) => { return (element.in === 'query' && element.examples) });
   const methodExamples = [];
-  for (object of queryParamsWithExamples ) {
+  for (object of queryParamsWithExamples) {
     if (object.examples[method]) {
       methodExamples.push({ name: object.name, query: object.examples[method] })
     }
